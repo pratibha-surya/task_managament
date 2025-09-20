@@ -12,6 +12,8 @@ export const setAuthToken = (token) => {
   }
 };
 
+
+
 // Auth
 export const login = async (username, password) => {
   try {
@@ -75,4 +77,17 @@ export const deleteTask = async (id) => {
   } catch (err) {
     throw err.response?.data || err;
   }
+};
+
+export const getDashboardData = async () => {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('No auth token found');
+
+  const res = await axios.get(`${API_URL}/tasks/dashboard`, {
+    headers: {
+      'x-auth-token': token,
+    },
+  });
+
+  return res.data;
 };

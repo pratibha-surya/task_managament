@@ -5,72 +5,58 @@ import {
   Route,
   Navigate,
 } from 'react-router-dom';
-import Navbar from './Component/Navbar';
+
+
 import Login from './Component/Auth/Login';
 import Register from './Component/Auth/Register';
 import ProtectedRoute from './Component/Auth/ProtectedRoute';
 import TaskList from './Component/TaskList';
 import TaskForm from './Component/TaskForm';
 import TaskDetail from './Component/TaskDetail';
+import Dashboard from './Component/Dashboardpage';
+
 import { setAuthToken } from '../utils/api';
-
-
 import { Toaster } from 'react-hot-toast';
+import Layout from './Component/Layout';
 
 function App() {
   useEffect(() => {
     const token = localStorage.getItem('token');
-    setAuthToken(token);
+    if (token) {
+      setAuthToken(token);
+    }
   }, []);
 
   return (
     <Router>
-      <Navbar />
-
-     
       <Toaster position="top-right" reverseOrder={false} />
 
-      <div className="mt-4">
-        <Routes>
-          <Route path="/" element={<Navigate to="/tasks" />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+      <Routes>
+       
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
-          {/* ✅ Protected Routes */}
-          <Route
-            path="/tasks"
-            element={
-              <ProtectedRoute>
-                <TaskList />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/tasks/new"
-            element={
-              <ProtectedRoute>
-                <TaskForm />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/tasks/edit/:id"
-            element={
-              <ProtectedRoute>
-                <TaskForm />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/tasks/:id"
-            element={
-              <ProtectedRoute>
-                <TaskDetail />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </div>
+       
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          
+          <Route index element={<Navigate to="/tasks" />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="tasks" element={<TaskList />} />
+          <Route path="tasks/new" element={<TaskForm />} />
+          <Route path="tasks/edit/:id" element={<TaskForm />} />
+          <Route path="tasks/:id" element={<TaskDetail />} />
+        </Route>
+
+       
+        <Route path="*" element={<Navigate to="/tasks" replace />} />
+      </Routes>
     </Router>
   );
 }

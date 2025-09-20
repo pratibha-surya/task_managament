@@ -6,17 +6,24 @@ import Pagination from './Pagination';
 import { deleteTask, fetchTasks, updateTask } from '../../utils/api';
 
 const TaskList = () => {
-  const [tasks, setTasks] = useState([]);
-  const [page, setPage] = useState(1);
+  const [tasks, setTasks] = useState(() => {
+    const saved = localStorage.getItem('cachedTasks');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [page, setPage] = useState(() => {
+    const savedPage = localStorage.getItem('cachedPage');
+    return savedPage ? Number(savedPage) : 1;
+  });
+
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const token = localStorage.getItem('token');
 
   useEffect(() => {
     if (token) {
-      
+      loadTasks(page); 
     }
-    loadTasks(page);
   }, [page, token]);
 
   const loadTasks = async (pageNum) => {
@@ -25,21 +32,25 @@ const TaskList = () => {
       const data = await fetchTasks(pageNum);
       setTasks(data.tasks);
       setTotalPages(data.totalPages || 1);
+      
+      localStorage.setItem('cachedTasks', JSON.stringify(data.tasks));
+      localStorage.setItem('cachedPage', pageNum);
     } catch (err) {
       console.error('Error fetching tasks', err);
-      toast.error('Failed to load tasks'); 
+      toast.error('Failed to load tasks');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleStatusToggle = async (id, newStatus) => {
     try {
       await updateTask(id, { status: newStatus });
-      toast.success(`Task marked as ${newStatus}`); 
-      loadTasks(page);
+      toast.success(`Task marked as ${newStatus}`);
+      loadTasks(page); 
     } catch (err) {
-      console.error('Error updating status', err);
-      toast.error('Failed to update task status'); 
+      console.error('Error updating task status', err);
+      toast.error('Failed to update task status');
     }
   };
 
@@ -49,11 +60,11 @@ const TaskList = () => {
 
     try {
       await deleteTask(id);
-      toast.success('Task deleted'); 
+      toast.success('Task deleted');
       loadTasks(page);
     } catch (err) {
       console.error('Error deleting task', err);
-      toast.error('Failed to delete task'); 
+      toast.error('Failed to delete task');
     }
   };
 
@@ -86,7 +97,10 @@ const TaskList = () => {
       <Pagination
         currentPage={page}
         totalPages={totalPages}
-        onPageChange={setPage}
+        onPageChange={(newPage) => {
+          setPage(newPage);
+          localStorage.setItem('cachedPage', newPage);
+        }}
       />
     </div>
   );

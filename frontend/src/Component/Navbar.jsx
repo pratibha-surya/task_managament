@@ -6,8 +6,23 @@ const Navbar = () => {
   const token = localStorage.getItem('token');
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login'); 
+    
+    const cachedTasks = localStorage.getItem('cachedTasks');
+    const cachedPage = localStorage.getItem('cachedPage');
+
+    
+    localStorage.clear();
+
+    
+    if (cachedTasks) {
+      localStorage.setItem('cachedTasks', cachedTasks);
+    }
+    if (cachedPage) {
+      localStorage.setItem('cachedPage', cachedPage);
+    }
+
+    
+    navigate('/login');
   };
 
   return (

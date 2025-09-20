@@ -93,3 +93,35 @@ export const deleteTask = async (req, res) => {
     res.status(500).json({ msg: 'Server error' });
   }
 };
+export const getDashboardData = async (req, res) => {
+  try {
+    const userId = req.user?.id || req.user?._id;
+    console.log(userId)
+
+    if (!userId) {
+      console.error('getDashboardData: User ID missing in token', req.user);
+      return res.status(401).json({ message: 'User not authorized' });
+    }
+
+    const total = await Task.countDocuments({ user: userId });
+    const pending = await Task.countDocuments({ user: userId, status: 'pending' });
+    const completed = await Task.countDocuments({ user: userId, status: 'completed' });
+
+    const high = await Task.countDocuments({ user: userId, priority: 'high' });
+    const medium = await Task.countDocuments({ user: userId, priority: 'medium' });
+    const low = await Task.countDocuments({ user: userId, priority: 'low' });
+
+    res.json({
+      total,
+      pending,
+      completed,
+      high,
+      medium,
+      low,
+    });
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error.message, error.stack);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
